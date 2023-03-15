@@ -1,0 +1,284 @@
+Consultas Eder
+
+https://pt.wikipedia.org/wiki/Wikip%C3%A9dia:GLAM/CEPID_NeuroMat/Pesquisa
+
+
+
+Tutorial de Wikidata Query Service: https://wdqs-tutorial.toolforge.org/
+
+
+Artigo completo: Infinite Systems of Interacting Chains with Memory of Variable Length—A Stochastic Model for Biological Neural Nets
+https://www.wikidata.org/wiki/Q56592766
+
+
+
+Query QUALIS paper
+-------------------------------
+https://w.wiki/6GCG
+
+#defaultView:BarChart
+SELECT DISTINCT ?Year (COUNT(DISTINCT ?item) AS ?Number_Publications) ?label WHERE {
+  ?item wdt:P361 wd:Q18477654;
+        wdt:P1433 ?revista;
+        wdt:P577 ?data_.
+  
+  BIND(STR(YEAR(?data_)) AS ?Year)
+  OPTIONAL {?revista wdt:P9683 ?qualis.
+            OPTIONAL{
+                ?qualis rdfs:label ?label_. 
+                FILTER(LANG(?label_)="pt-br")
+            }             
+            BIND(IF(wikibase:isSomeValue(?qualis),
+                    "Sem Cla",
+                    ?label_) AS ?label)    
+  } 
+      
+  FILTER(str(?label)!="B3" && str(?label)!="B4" && str(?label)!="C" && str(?label)!="NP" && str(?label)!="Sem Cla").    
+} GROUP BY ?Year ?label
+
+
+Query Affiliados neuromat 
+------------------------------------------
+
+https://w.wiki/6GbD
+
+#defaultView:BarChart
+SELECT distinct  ?Year (COUNT(?position) AS ?Number_Affiliates )   ?positionLabel {
+     
+    #Values ?Anio { '2013' '2014' '2015' '2016' '2017' '2018' '2019' '2020' '2021' '2022' '2023' '2024'}
+    Values ?Anio { 2013 2014 2015 2016 2017 2018 2019 2020 2021 2022 2023 2024}
+    ?item p:P1416 [ps:P1416 wd:Q18477654;
+                     pq:P39 ?position;
+                     pq:P580 ?starttime;  
+                     pq:P582 ?endtime;
+                  ].
+    
+    BIND(YEAR(?starttime) AS ?AnoIni)
+    BIND(YEAR(?endtime) AS ?AnoFim)    
+    
+    BIND(STR(?Anio) AS ?Year)    
+  
+    FILTER( ?Anio >= ?AnoIni && ?Anio <= ?AnoFim )    
+    #FILTER( ?Anio = STR(?AnoIni) || ?Ano = ?AnoFim )    
+    
+    SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
+}
+Group BY ?Year  ?positionLabel
+Order by ASC (?Year)
+
+
+
+Keywords by years
+---------------------------------------------------------------
+https://w.wiki/6GbB
+
+#defaultView:BarChart 
+SELECT DISTINCT ?Year (COUNT(?NeuroMat) AS ?Number_Keywords) ?keyLabel WHERE {  
+  ?NeuroMat wdt:P361 wd:Q18477654.
+  ?NeuroMat wdt:P577 ?dataTemp.
+  BIND(STR(YEAR(?dataTemp)) AS ?Year)  
+  ?NeuroMat wdt:P921 ?key. 
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en".}
+} 
+GROUP BY ?key ?keyLabel ?Year 
+
+
+
+--------------------------------------------------------------------
+Types of authorship in articles
+Tipos de autoria nos artigos
+
+https://query.wikidata.org/index.html#%23defaultView%3ABarChart%20%0ASELECT%20%3FAuthorship%20%20%28COUNT%28%3FAuthorship%29%20AS%20%3FArticles%29%20%20%3FQualis_Rank%20WHERE%20%7B%20%20%20%20%0A%20%20%7B%0A%20%20%20%20SELECT%20DISTINCT%20%3Fobras%20%28COUNT%28%3Fpesquisadores%29%20AS%20%3Fautoria%29%20%3Frevista%20WHERE%20%7B%20%20%20%20%20%20%0A%20%20%20%20%20%20%3Fobras%20wdt%3AP361%20wd%3AQ18477654.%20%0A%20%20%20%20%20%20%3Fobras%20wdt%3AP50%20%3Fpesquisadores.%0A%20%20%20%20%20%20%3Fobras%20wdt%3AP1433%20%3Frevista.%0A%20%20%20%20%20%20%0A%20%20%20%20%20%20optional%20%7B%0A%20%20%20%20%20%20%20%20%3Fobras%20wdt%3AP2093%20%3Fpesquisadores.%0A%20%20%20%20%20%20%7D%0A%20%20%20%7D%0A%20%20%20GROUP%20BY%20%20%3Fobras%20%3Fautoria%20%3Frevista%0A%20%20%7D%20%20%0A%20%20%0A%20%20BIND%28%0A%20%20%20%20IF%28%3Fautoria%20%3D%201%2C%20%22Single%22%2C%0A%20%20%20%20%20%20IF%28%3Fautoria%20%20%3D%202%2C%20%22Dual%22%2C%0A%20%20%20%20%20%20%20%20IF%28%3Fautoria%20%3D%203%2C%20%22Triple%22%2C%20%22%3E3%22%29%29%29%20AS%20%3FAuthorship%29.%20%20%0A%20%20%0A%20%20OPTIONAL%20%7B%3Frevista%20wdt%3AP9683%20%3Fqualis.%0A%20%20%20%20%20%20%20%20%20%20%20%20OPTIONAL%7B%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Fqualis%20rdfs%3Alabel%20%3Flabel_.%20%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20FILTER%28LANG%28%3Flabel_%29%3D%22pt-br%22%29%0A%20%20%20%20%20%20%20%20%20%20%20%20%7D%20%20%20%20%20%20%20%20%20%20%20%20%20%0A%20%20%20%20%20%20%20%20%20%20%20%20BIND%28IF%28wikibase%3AisSomeValue%28%3Fqualis%29%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22Sem%20Cla%22%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Flabel_%29%20AS%20%3FQualis_Rank%29%20%20%20%20%0A%20%20%7D%20%0A%20%20%20%20%20%20%0A%20%20%20%20%20FILTER%28%20%20%20str%28%3FQualis_Rank%29%21%3D%22B1%22%20%26%26%20str%28%3FQualis_Rank%29%21%3D%22B2%22%20%26%26%20str%28%3FQualis_Rank%29%21%3D%22B3%22%20%26%26%20str%28%3FQualis_Rank%29%21%3D%22B4%22%20%0A%20%20%20%20%20%20%20%20%20%20%20%20%26%26%20str%28%3FQualis_Rank%29%21%3D%22C%22%20%26%26%20str%28%3FQualis_Rank%29%21%3D%22NP%22%20%26%26%20str%28%3FQualis_Rank%29%21%3D%22Sem%20Cla%22%29.%20%20%20%20%0A%20%20%0A%20%20%0A%7D%0A%20%20GROUP%20BY%20%20%3FAuthorship%20%3FArticles%20%3FQualis_Rank%0AORDER%20BY%20%3FQualis_Rank%20%20%3FArticles%0A
+
+----------------------------------------------------------------------
+#defaultView:BarChart
+SELECT ?Authorship  (COUNT(?Authorship) AS ?Articles)  ?Qualis_Rank WHERE {    
+  {
+    SELECT DISTINCT ?obras (COUNT(?pesquisadores) AS ?autoria) ?revista WHERE {      
+      ?obras wdt:P361 wd:Q18477654. 
+      ?obras wdt:P50 ?pesquisadores.
+      ?obras wdt:P1433 ?revista.
+      
+      optional {
+        ?obras wdt:P2093 ?pesquisadores.
+      }
+   }
+   GROUP BY  ?obras ?autoria ?revista
+  }  
+  
+  BIND(
+    IF(?autoria = 1, "Single",
+      IF(?autoria  = 2, "Dual",
+        IF(?autoria = 3, "Triple", ">3"))) AS ?Authorship).  
+  
+  OPTIONAL {?revista wdt:P9683 ?qualis.
+            OPTIONAL{
+                ?qualis rdfs:label ?label_. 
+                FILTER(LANG(?label_)="pt-br")
+            }             
+            BIND(IF(wikibase:isSomeValue(?qualis),
+                    "Sem Cla",
+                    ?label_) AS ?Qualis_Rank)    
+  } 
+      
+     FILTER(   str(?Qualis_Rank)!="B1" && str(?Qualis_Rank)!="B2" && str(?Qualis_Rank)!="B3" && str(?Qualis_Rank)!="B4" 
+            && str(?Qualis_Rank)!="C" && str(?Qualis_Rank)!="NP" && str(?Qualis_Rank)!="Sem Cla").    
+  
+  
+}
+  GROUP BY  ?Authorship ?Articles ?Qualis_Rank
+ORDER BY ?Qualis_Rank  ?Articles
+
+
+-----------------------------------------------------------------
+Autores, revista DOI
+-----------------------------------------------------------------
+
+https://w.wiki/6Ln6
+
+SELECT DISTINCT ?obras ?obrasLabel ?revista ?pesquisadoresLabel ?doi ?Year WHERE {      
+      ?obras wdt:P361 wd:Q18477654. 
+      #?obras wdt:P50 ?pesquisadores.
+      ?obras wdt:P1433 ?revista.
+      
+  
+      optional {
+        ?obras wdt:P2093 ?pesquisadores.
+      }
+  
+      optional {
+        ?obras wdt:P356 ?doi.
+      }
+  
+    ?obras wdt:P577 ?dataTemp.
+    BIND(STR(YEAR(?dataTemp)) AS ?Year)  
+  
+  
+    SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en".}
+   }
+   GROUP BY  ?obras ?obrasLabel  ?revista ?pesquisadoresLabel ?doi ?Year
+ORDER BY  ?Year ?obrasLabel 
+
+-----------------------------------------------------------------
+Artigos NeuroMAT sem citações
+-----------------------------------------------------------------
+
+
+SELECT DISTINCT ?obras ?obrasLabel  ?pesquisadores ?pesquisadoresLabel  ?Year WHERE {      
+      ?obras wdt:P361 wd:Q18477654. 
+      ?obras wdt:P50 ?pesquisadores.
+      #?obras wdt:P1433 ?revista.     
+ 
+      ?pesquisadores wdt:P1416 wd:Q18477654.
+   
+      ?obras wdt:P577 ?dataTemp.
+      BIND(STR(YEAR(?dataTemp)) AS ?Year)  
+  
+      FILTER ( !  EXISTS { ?obras wdt:P2860 [] } )     
+  
+  
+      SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en".}
+   }
+   GROUP BY  ?obras ?obrasLabel ?pesquisadores ?pesquisadoresLabel  ?Year
+ORDER BY  ?Year  ?obrasLabel 
+
+-----------------------------------------------------------------
+Artigos NeuroMAT sem palavras chaves
+-----------------------------------------------------------------
+
+
+SELECT DISTINCT ?obras ?obrasLabel  ?pesquisadores ?pesquisadoresLabel  ?Year WHERE {      
+      ?obras wdt:P361 wd:Q18477654. 
+      ?obras wdt:P50 ?pesquisadores.
+      #?obras wdt:P1433 ?revista.     
+ 
+      ?pesquisadores wdt:P1416 wd:Q18477654.
+   
+      ?obras wdt:P577 ?dataTemp.
+      BIND(STR(YEAR(?dataTemp)) AS ?Year)  
+  
+      FILTER ( ! EXISTS { ?obras wdt:P921 [] } )     
+  
+  
+      SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en".}
+   }
+   GROUP BY  ?obras ?obrasLabel ?pesquisadores ?pesquisadoresLabel  ?Year
+ORDER BY  ?Year  ?obrasLabel 
+
+------------------------------------------------------------
+Artigos NeuroMAT COM palavras chaves
+--------------------------------------------------------------
+SELECT DISTINCT ?obras ?obrasLabel  ?keys ?keysLabel ?Year WHERE {      
+      ?obras wdt:P361 wd:Q18477654. 
+      ?obras wdt:P50 ?pesquisadores.
+      #?obras wdt:P1433 ?revista.     
+ 
+      ?pesquisadores wdt:P1416 wd:Q18477654.
+   
+      ?obras wdt:P921 ?keys.
+  
+      ?obras wdt:P577 ?dataTemp.
+      
+      BIND(STR(YEAR(?dataTemp)) AS ?Year)  
+      
+      
+      FILTER ( EXISTS { ?obras wdt:P921 ?keys. } )     
+  
+  
+      SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en".}
+   }
+   GROUP BY  ?obras ?obrasLabel   ?keys ?keysLabel ?Year
+ORDER BY  ?Year  ?obrasLabel ?keysLabel
+
+------------------------------------------------------------
+Artigos NeuroMAT e suas palavras chaves
+--------------------------------------------------------------
+
+
+SELECT DISTINCT ?obras ?obrasLabel  ?keys ?keysLabel ?Year WHERE {      
+      ?obras wdt:P361 wd:Q18477654. 
+      ?obras wdt:P50 ?pesquisadores.
+      #?obras wdt:P1433 ?revista.     
+ 
+      ?pesquisadores wdt:P1416 wd:Q18477654.
+      
+  optional {
+      ?obras wdt:P921 ?keys.}
+  
+      ?obras wdt:P577 ?dataTemp.
+      
+      BIND(STR(YEAR(?dataTemp)) AS ?Year)  
+      
+      
+      #FILTER ( EXISTS { ?obras wdt:P921 ?keys. } )     
+  
+  
+      SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en".}
+   }
+   GROUP BY  ?obras ?obrasLabel   ?keys ?keysLabel ?Year
+ORDER BY  ?Year  ?obrasLabel ?keysLabel
+
+________________________________________________________________
+
+Artigos sem citações por ano descente
+-----------------------------------------------------------------------
+
+
+SELECT DISTINCT ?obras ?obrasLabel  ?pesquisadores ?pesquisadoresLabel  ?Year WHERE {      
+      ?obras wdt:P361 wd:Q18477654. 
+      ?obras wdt:P50 ?pesquisadores.
+      #?obras wdt:P1433 ?revista.     
+ 
+      ?pesquisadores wdt:P1416 wd:Q18477654.
+   
+      ?obras wdt:P577 ?dataTemp.
+      BIND(STR(YEAR(?dataTemp)) AS ?Year)  
+  
+      FILTER ( !  EXISTS { ?obras wdt:P2860 [] } )     
+  
+  
+      SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en".}
+   }
+   GROUP BY  ?obras ?obrasLabel ?pesquisadores ?pesquisadoresLabel  ?Year
+ORDER by DeSC ( ?Year )
+
