@@ -1,0 +1,129 @@
+
+Consultas Blog Camila
+
+Consultas Eder
+
+https://pt.wikipedia.org/wiki/Wikip%C3%A9dia:GLAM/CEPID_NeuroMat/Pesquisa
+
+
+
+Tutorial de Wikidata Query Service: https://wdqs-tutorial.toolforge.org/
+
+
+Artigo completo: Infinite Systems of Interacting Chains with Memory of Variable Length—A Stochastic Model for Biological Neural Nets
+https://www.wikidata.org/wiki/Q56592766
+
+
+
+No contexto do CEPID NeuroMat, participaram desta linha [XX] pesquisadores
+-----------------------------------------
+Número de pesquisadores do NeuroMat
+----------------------------------------
+
+
+
+
+-------------------------------------------------------------------------------------
+Artigos Neuromat que não citam outros artigos NeuroMat: 
+https://w.wiki/3Dv4
+------------------------------------------------------------------------------------
+SELECT DISTINCT ?artigo1 WHERE {
+  ?artigo1 wdt:P361 wd:Q18477654.
+  ?artigo1 wdt:P2860 ?artigo2.
+  
+  FILTER NOT EXISTS{?artigo2 wdt:P361 wd:Q18477654.}
+}
+
+--------------------------------------------------
+Artigos Neuro Mat com Topicos Principais declarados
+https://w.wiki/3KEy
+------------------------------------------------------------------------
+
+SELECT DISTINCT ?artigo ?artigoLabel ?url WHERE {
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
+  ?artigo wdt:P361 wd:Q18477654.
+  
+  OPTIONAL{?artigo wdt:P953 ?url}
+  
+  FILTER EXISTS{?artigo wdt:P921 [].}
+}
+
+
+
+--------------------------------------
+Número de artigos do NeuroMat
+---------------------------------
+
+SELECT (count (DISTINCT ?artigos) as ?Artigos) WHERE {
+  ?artigos wdt:P361 wd:Q18477654.  
+}
+
+--------------------------------------------------
+Evolução das áreas de pesquisa
+Artigos com tópico (P921): 
+https://w.wiki/3Duw
+
+--------------------------------------------------
+#defaultView:BarChart 
+SELECT DISTINCT ?data (COUNT(?NeuroMat) AS ?number) ?keyLabel WHERE {  
+  ?NeuroMat wdt:P361 wd:Q18477654.
+  ?NeuroMat wdt:P577 ?dataTemp.
+  BIND(STR(YEAR(?dataTemp)) AS ?data)  
+  ?NeuroMat wdt:P921 ?key. 
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en".}
+} 
+GROUP BY ?key ?keyLabel ?data 
+
+
+#defaultView:LineChart
+SELECT DISTINCT ?data (COUNT(?NeuroMat) AS ?number) ?keyLabel (?keyLabel AS ?storyboard) WHERE {  
+  ?NeuroMat wdt:P361 wd:Q18477654.
+  ?NeuroMat wdt:P577 ?data_.
+  BIND(STR(YEAR(?data_)) AS ?data)  
+  ?NeuroMat wdt:P921 ?key.
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
+} 
+GROUP BY ?key ?keyLabel ?data ?dataLabel
+
+--------------------------------------------------
+Áreas de pesquisa emergidas
+------------------------------------------------
+
+#defaultView:BubbleChart
+SELECT DISTINCT ?key ?keyLabel (COUNT(?NeuroMat) AS ?number) WHERE {  
+  ?NeuroMat wdt:P361 wd:Q18477654.
+  ?NeuroMat wdt:P577 ?data_.    
+  ?NeuroMat wdt:P921 ?key.
+  BIND(STR(YEAR(?data_)) AS ?data)
+  FILTER(?data>="2013")
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
+  }
+  GROUP BY ?key ?keyLabel ORDER BY ASC(?data)
+  
+  
+--------------------------------------------------  
+Distribuição de autores em publicações do NeuroMat por gênero
+--------------------------------------------------
+#defaultView:BarChart
+SELECT DISTINCT ?data ?num ?gen_tempLabel WHERE {
+  {
+    SELECT DISTINCT ?data ?gen_temp (COUNT(?pesquisadores) AS ?num) WHERE {
+      ?obras wdt:P361 wd:Q18477654;
+        wdt:P50 ?pesquisadores.
+      ?pesquisadores wdt:P21 ?gen_temp.
+      ?obras wdt:P577 ?data_temp.
+      BIND(STR(YEAR(?data_temp)) AS ?data)
+    }
+    GROUP BY ?data ?gen_temp
+    ORDER BY (?data)
+  }
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
+}
+  
+  
+Áreas de pesquisa em colaboração com autores internacionais
+-----------------------------
+Linha do tempo dos trabalhos com pesquisdores internacionais.
+
+
+
