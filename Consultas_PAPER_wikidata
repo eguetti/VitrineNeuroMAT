@@ -289,3 +289,50 @@ SELECT DISTINCT ?obras ?obrasLabel  ?pesquisadores ?pesquisadoresLabel  ?Year WH
    GROUP BY  ?obras ?obrasLabel ?pesquisadores ?pesquisadoresLabel  ?Year
 ORDER by DeSC ( ?Year )
 
+
+
+O grafo de coautores por nacionalidade da afiliação é gerado por esta consulta: 
+-------------------------------------------------------------------------------
+
+https://w.wiki/6UTU
+
+
+#defaultView:Graph
+SELECT DISTINCT ?Autor1 ?Autor1Label ?rgb ?Autor2 ?Autor2Label
+WITH {
+  SELECT ?Obra WHERE {
+    SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
+    ?Obra wdt:P361 wd:Q18477654.
+  }
+} AS %artigos
+WITH {
+  SELECT ?Autor1 ?Obra WHERE {
+    INCLUDE %artigos.
+    SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
+    ?Obra wdt:P50 ?Autor1.
+  }
+} AS %autor1
+WITH {
+  SELECT ?Autor1 ?Autor2 ?Obra WHERE {
+    INCLUDE %artigos.
+    INCLUDE %autor1.
+    SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
+    ?Obra wdt:P50 ?Autor2.
+    FILTER(?Autor1 != ?Autor2)
+  }
+  GROUP BY ?Autor1 ?Autor2 ?Obra
+} AS %autor2
+WHERE {
+  INCLUDE %autor2.
+  OPTIONAL {
+    { ?Autor1 p:P1416 ?class. ?class pq:P276 [wdt:P17 ?country] }
+    UNION
+    { ?Autor1 wdt:P1416 [wdt:P17 ?country] }
+    UNION
+    { ?Autor1 wdt:P108 ?class. ?class wdt:P17 ?country }
+  }
+  BIND( IF(?country=wd:Q155, "409900", "e6350d") AS ?rgb)
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
+}
+
+
