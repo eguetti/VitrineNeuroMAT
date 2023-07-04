@@ -47,6 +47,11 @@ SELECT DISTINCT ?Year (COUNT(DISTINCT ?item) AS ?Number_Publications) ?label WHE
 Query Affiliados neuromat 
 ------------------------------------------
 
+Português Brasil
+https://w.wiki/6xJE
+
+
+Inglês
 https://w.wiki/6GbD
 
 #defaultView:BarChart
