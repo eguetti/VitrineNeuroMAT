@@ -88,6 +88,18 @@ Keywords by years
 ---------------------------------------------------------------
 https://w.wiki/6GbB
 
+----Em Portugues ---------------
+#defaultView:BarChart 
+SELECT DISTINCT ?Year (COUNT(?NeuroMat) AS ?Number_Keywords) ?keyLabel WHERE {  
+  ?NeuroMat wdt:P361 wd:Q18477654.
+  ?NeuroMat wdt:P577 ?dataTemp.
+  BIND(STR(YEAR(?dataTemp)) AS ?Year)  
+  ?NeuroMat wdt:P921 ?key. 
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "pt-br".}
+} 
+GROUP BY ?key ?keyLabel ?Year 
+
+----Em inglês ---------------
 #defaultView:BarChart 
 SELECT DISTINCT ?Year (COUNT(?NeuroMat) AS ?Number_Keywords) ?keyLabel WHERE {  
   ?NeuroMat wdt:P361 wd:Q18477654.
@@ -292,8 +304,7 @@ ORDER BY  ?Year  ?obrasLabel ?keysLabel
 ------------------------------------------------------------
 Artigos NeuroMAT e suas palavras chaves
 --------------------------------------------------------------
-
-
+-----Em inglês-----------------
 SELECT DISTINCT ?obras ?obrasLabel  ?keys ?keysLabel ?Year WHERE {      
       ?obras wdt:P361 wd:Q18477654. 
       ?obras wdt:P50 ?pesquisadores.
