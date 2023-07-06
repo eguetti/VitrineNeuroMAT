@@ -103,6 +103,49 @@ GROUP BY ?key ?keyLabel ?Year
 --------------------------------------------------------------------
 Types of authorship in articles
 Tipos de autoria nos artigos
+------------------------------------------------------------------------
+
+----Em português ------------------
+#defaultView:BarChart
+SELECT ?Autoria  (COUNT(?Autoria) AS ?Numero_Artigos)  ?Qualis_Rank WHERE {    
+  {
+    SELECT DISTINCT ?obras (COUNT(?pesquisadores) AS ?autoria) ?revista WHERE {      
+      ?obras wdt:P361 wd:Q18477654. 
+      ?obras wdt:P50 ?pesquisadores.
+      ?obras wdt:P1433 ?revista.
+      
+      optional {
+        ?obras wdt:P2093 ?pesquisadores.
+      }
+   }
+   GROUP BY  ?obras ?autoria ?revista
+  }  
+  
+  BIND(
+    IF(?autoria = 1, "Único(a)",
+      IF(?autoria  = 2, "Dupla",
+        IF(?autoria = 3, "Tripla", ">3"))) AS ?Autoria).  
+  
+  OPTIONAL {?revista wdt:P9683 ?qualis.
+            OPTIONAL{
+                ?qualis rdfs:label ?label_. 
+                FILTER(LANG(?label_)="pt-br")
+            }             
+            BIND(IF(wikibase:isSomeValue(?qualis),
+                    "Sem Cla",
+                    ?label_) AS ?Qualis_Rank)    
+  } 
+      
+     FILTER(   str(?Qualis_Rank)!="B1" && str(?Qualis_Rank)!="B2" && str(?Qualis_Rank)!="B3" && str(?Qualis_Rank)!="B4" 
+            && str(?Qualis_Rank)!="C" && str(?Qualis_Rank)!="NP" && str(?Qualis_Rank)!="Sem Cla").    
+  
+  
+}
+  GROUP BY  ?Autoria ?Articles ?Qualis_Rank
+ORDER BY ?Qualis_Rank  ?Articles
+
+
+--- Em inglês------------
 
 https://query.wikidata.org/index.html#%23defaultView%3ABarChart%20%0ASELECT%20%3FAuthorship%20%20%28COUNT%28%3FAuthorship%29%20AS%20%3FArticles%29%20%20%3FQualis_Rank%20WHERE%20%7B%20%20%20%20%0A%20%20%7B%0A%20%20%20%20SELECT%20DISTINCT%20%3Fobras%20%28COUNT%28%3Fpesquisadores%29%20AS%20%3Fautoria%29%20%3Frevista%20WHERE%20%7B%20%20%20%20%20%20%0A%20%20%20%20%20%20%3Fobras%20wdt%3AP361%20wd%3AQ18477654.%20%0A%20%20%20%20%20%20%3Fobras%20wdt%3AP50%20%3Fpesquisadores.%0A%20%20%20%20%20%20%3Fobras%20wdt%3AP1433%20%3Frevista.%0A%20%20%20%20%20%20%0A%20%20%20%20%20%20optional%20%7B%0A%20%20%20%20%20%20%20%20%3Fobras%20wdt%3AP2093%20%3Fpesquisadores.%0A%20%20%20%20%20%20%7D%0A%20%20%20%7D%0A%20%20%20GROUP%20BY%20%20%3Fobras%20%3Fautoria%20%3Frevista%0A%20%20%7D%20%20%0A%20%20%0A%20%20BIND%28%0A%20%20%20%20IF%28%3Fautoria%20%3D%201%2C%20%22Single%22%2C%0A%20%20%20%20%20%20IF%28%3Fautoria%20%20%3D%202%2C%20%22Dual%22%2C%0A%20%20%20%20%20%20%20%20IF%28%3Fautoria%20%3D%203%2C%20%22Triple%22%2C%20%22%3E3%22%29%29%29%20AS%20%3FAuthorship%29.%20%20%0A%20%20%0A%20%20OPTIONAL%20%7B%3Frevista%20wdt%3AP9683%20%3Fqualis.%0A%20%20%20%20%20%20%20%20%20%20%20%20OPTIONAL%7B%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Fqualis%20rdfs%3Alabel%20%3Flabel_.%20%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20FILTER%28LANG%28%3Flabel_%29%3D%22pt-br%22%29%0A%20%20%20%20%20%20%20%20%20%20%20%20%7D%20%20%20%20%20%20%20%20%20%20%20%20%20%0A%20%20%20%20%20%20%20%20%20%20%20%20BIND%28IF%28wikibase%3AisSomeValue%28%3Fqualis%29%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22Sem%20Cla%22%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%3Flabel_%29%20AS%20%3FQualis_Rank%29%20%20%20%20%0A%20%20%7D%20%0A%20%20%20%20%20%20%0A%20%20%20%20%20FILTER%28%20%20%20str%28%3FQualis_Rank%29%21%3D%22B1%22%20%26%26%20str%28%3FQualis_Rank%29%21%3D%22B2%22%20%26%26%20str%28%3FQualis_Rank%29%21%3D%22B3%22%20%26%26%20str%28%3FQualis_Rank%29%21%3D%22B4%22%20%0A%20%20%20%20%20%20%20%20%20%20%20%20%26%26%20str%28%3FQualis_Rank%29%21%3D%22C%22%20%26%26%20str%28%3FQualis_Rank%29%21%3D%22NP%22%20%26%26%20str%28%3FQualis_Rank%29%21%3D%22Sem%20Cla%22%29.%20%20%20%20%0A%20%20%0A%20%20%0A%7D%0A%20%20GROUP%20BY%20%20%3FAuthorship%20%3FArticles%20%3FQualis_Rank%0AORDER%20BY%20%3FQualis_Rank%20%20%3FArticles%0A
 
