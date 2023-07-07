@@ -86,9 +86,11 @@ Order by ASC (?Year)
 
 Keywords by years
 ---------------------------------------------------------------
-https://w.wiki/6GbB
+
 
 ----Em Portugues ---------------
+https://w.wiki/6zJ3
+
 #defaultView:BarChart 
 SELECT DISTINCT ?Year (COUNT(?NeuroMat) AS ?Number_Keywords) ?keyLabel WHERE {  
   ?NeuroMat wdt:P361 wd:Q18477654.
@@ -100,6 +102,8 @@ SELECT DISTINCT ?Year (COUNT(?NeuroMat) AS ?Number_Keywords) ?keyLabel WHERE {
 GROUP BY ?key ?keyLabel ?Year 
 
 ----Em inglês ---------------
+https://w.wiki/6GbB
+----------------------
 #defaultView:BarChart 
 SELECT DISTINCT ?Year (COUNT(?NeuroMat) AS ?Number_Keywords) ?keyLabel WHERE {  
   ?NeuroMat wdt:P361 wd:Q18477654.
