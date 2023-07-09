@@ -26,3 +26,44 @@ SELECT distinct ?Países ?Número_Publicações ?pesquisadores  ?Pesquisador  WH
   SERVICE wikibase:label { bd:serviceParam wikibase:language '[AUTO_LANGUAGE],pt'. }
 }
 ORDER BY ASC (?Número_Publicações)
+
+
+-----------------------
+Co-autores por gênero
+-------------------------
+
+
+#defaultView:Graph
+SELECT DISTINCT ?Autor1 ?Autor1Label ?rgb ?Autor2 ?Autor2Label
+WITH {
+  SELECT ?Obra WHERE {
+    SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
+    ?Obra wdt:P2860 wd:Q56592766.    
+    ?Obra wdt:P361 wd:Q18477654; wdt:P50 ?autores.
+  }
+} AS %artigos
+WITH {
+  SELECT ?Autor1 ?Obra WHERE {
+    INCLUDE %artigos.
+    SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
+    ?Obra wdt:P50 ?Autor1.
+  }
+} AS %autor1
+WITH {
+  SELECT ?Autor1 ?Autor2 ?Obra WHERE {
+    INCLUDE %artigos.
+    INCLUDE %autor1.
+    SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
+    ?Obra wdt:P50 ?Autor2.
+    FILTER(?Autor1 != ?Autor2)
+  }
+  GROUP BY ?Autor1 ?Autor2 ?Obra
+} AS %autor2
+WHERE {
+  INCLUDE %autor2.
+  OPTIONAL { ?Autor1 wdt:P21 ?Gênero . }
+  BIND( IF(?Gênero = wd:Q6581097, "0010ff","ff0010") AS ?rgb)
+   
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
+}
+
