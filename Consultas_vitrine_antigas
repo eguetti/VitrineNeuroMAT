@@ -66,4 +66,92 @@ WHERE {
    
   SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
 }
-
+-----------------------------
+citacoes internas
+-------------------------------
+#defaultView:Graph
+SELECT DISTINCT ?Artigo (?Nome_do_artigo AS ?ArtigoLabel) ?rgb ?Artigo_citado ?Num_citações
+WITH { # Get articles only once. While here, take the max_order of the authors (P50 and P2093)
+  SELECT ?Artigo (max(?ordem_p50) AS ?ordem_max_p50) (max(?ordem_p2093) AS ?ordem_max_p2093) WHERE {        
+    ?Artigo wdt:P361 wd:Q18477654.
+    ?Artigo wdt:P2860 wd:Q56592766.
+    OPTIONAL {?Artigo p:P50 ?autor_p50. ?autor_p50 pq:P1545 ?ordem_p50}
+    OPTIONAL {?Artigo p:P2093 ?autor_p2093. ?autor_p2093 pq:P1545 ?ordem_p2093}
+  } GROUP BY ?Artigo
+} AS %artigos
+WITH { # From the max_order gotten earlier, select the maximun between them
+  SELECT ?Artigo ?O_max WHERE {
+    INCLUDE %artigos.
+    BIND(IF(BOUND(?ordem_max_p50),
+            IF(BOUND(?ordem_max_p2093),
+               IF(?ordem_max_p50 <= ?ordem_max_p2093, STR(?ordem_max_p2093), STR(?ordem_max_p50)),
+               STR(?ordem_max_p50)),
+            STR(?ordem_max_p2093)) AS ?O_max)
+  }
+} AS %ordem
+WITH { # Now, with the articles in hand, get the first author (assuming here that there is at least one filled)
+  # and get, if exists, the name of the second author.
+  SELECT ?Artigo ?autor1Label ?autor2Label ?O_max WHERE {
+    INCLUDE %ordem.
+    {?Artigo p:P50 ?autor_. ?autor_ ps:P50 ?autor1. ?autor_ pq:P1545 '1'.}
+    UNION
+    {?Artigo p:P2093 ?autor_. ?autor_ ps:P2093 ?autor1. ?autor_ pq:P1545 '1'.}
+    
+    OPTIONAL{{?Artigo p:P50 ?autor__. ?autor__ ps:P50 ?autor2. ?autor__ pq:P1545 '2'.}
+             UNION
+             {?Artigo p:P2093 ?autor__. ?autor__ ps:P2093 ?autor2. ?autor__ pq:P1545 '2'.}}
+    
+    SERVICE wikibase:label {bd:serviceParam wikibase:language '[AUTO_LANGUAGE],pt-br,pt,en,es,fr,de,ja'.
+                            ?autor1 rdfs:label ?autor1Label.
+                            ?autor2 rdfs:label ?autor2Label.}
+  }
+} AS %autores
+WITH { # Get the last name of the authors
+  SELECT ?Artigo ?Autor1_nome ?Autor2_nome ?O_max WHERE {
+    INCLUDE %autores.
+    BIND(REPLACE(STR(?autor1Label),REPLACE(str(?autor1Label),'[^ ]*$',''),'') AS ?Autor1_nome)
+    BIND(REPLACE(STR(?autor2Label),REPLACE(str(?autor2Label),'[^ ]*$',''),'') AS ?Autor2_nome)
+  }
+} AS %nome_autores
+WITH {
+  SELECT ?Artigo (COUNT(?Artigo_citando) AS ?Num_citações) WHERE {
+    INCLUDE %autores.
+    OPTIONAL{?Artigo_citando wdt:P2860 ?Artigo. ?Artigo_citando wdt:P361 wd:Q18477654.}
+  } GROUP BY ?Artigo
+} AS %num_citacoes
+WHERE{
+  INCLUDE %nome_autores.
+  INCLUDE %num_citacoes.
+  # Get the date, if it is filled
+  OPTIONAL {?Artigo wdt:P577 ?data_aux. BIND(YEAR(?data_aux) AS ?data_)}
+  BIND(IF(BOUND(?data_),STR(?data_),"?") AS ?data)
+  
+  # Now, if theres one or two authors, put their names and the date,
+  # if there is more, put put the first author followed by a 'et al'
+  BIND(IF(?O_max="1",
+          CONCAT(?Autor1_nome, ', ', ?data),
+          IF(?O_max="2",
+             CONCAT(?Autor1_nome, ', ', ?Autor2_nome, ', ', ?data),
+             CONCAT(?Autor1_nome, ' et al, ', ?data))) AS ?Nome_do_artigo)
+  
+  # If the articles cite each other, get this info.
+  OPTIONAL{?Artigo wdt:P2860 ?Artigo_citado. ?Artigo_citado wdt:P361 wd:Q18477654.}
+  OPTIONAL{?Artigo_citando wdt:P2860 ?Artigo. ?Artigo_citando wdt:P361 wd:Q18477654.}
+  
+  # Put some colors in the graph
+  BIND(IF(?Num_citações>30,
+          '31005e',
+          IF(?Num_citações>20,
+             '1a009c',
+             IF(?Num_citações>15,
+                '0587e3',
+                IF(?Num_citações>10,
+                   '05e3af',
+                   IF(?Num_citações>5,
+                      '7fe305',
+                      IF(?Num_citações>1,
+                         'e3dc05',
+                         IF(?Num_citações=1,
+                            'e37b05',
+                            'e30505'))))))) AS ?rgb)
+}
