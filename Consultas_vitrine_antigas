@@ -1,0 +1,28 @@
+-------------------------------------
+o gráfico abaixo apresenta em detalhes a quantidade de artigos produzidos por cada pesquisador, de acordo com a sua localização.
+--------------------------------------
+#defaultView:BarChart
+SELECT distinct ?Países ?Número_Publicações ?pesquisadores  ?Pesquisador  WHERE {  
+  ?pesquisadores wdt:P1416 wd:Q18477654. 
+  ?artigos wdt:P361 wd:Q18477654;
+           wdt:P50 ?pesquisadores. 
+           
+  ?pesquisadores rdfs:label ?Pesquisador. 
+  
+  FILTER(LANG(?Pesquisador)="pt-br")    
+  optional {
+    ?pesquisadores wdt:P108 ?employer.   
+    ?employer wdt:P17 ?pais.     
+    ?pais rdfs:label ?Países. 
+    FILTER(LANG(?Países)="pt-br")    
+  }   
+  {
+     SELECT DISTINCT (COUNT(?artigos) AS ?Número_Publicações) ?pesquisadores  WHERE {
+       ?artigos wdt:P361 wd:Q18477654.
+       ?artigos wdt:P50 ?pesquisadores.          
+      }
+    GROUP BY ?pesquisadores
+  }
+  SERVICE wikibase:label { bd:serviceParam wikibase:language '[AUTO_LANGUAGE],pt'. }
+}
+ORDER BY ASC (?Número_Publicações)
