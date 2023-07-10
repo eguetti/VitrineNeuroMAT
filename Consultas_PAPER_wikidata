@@ -116,14 +116,14 @@ Keywords by years
 https://w.wiki/6zJ3
 
 #defaultView:BarChart 
-SELECT DISTINCT ?Year (COUNT(?NeuroMat) AS ?Number_Keywords) ?keyLabel WHERE {  
+SELECT DISTINCT ?Ano (COUNT(?NeuroMat) AS ?Número_Temas_Principais) ?keyLabel WHERE {  
   ?NeuroMat wdt:P361 wd:Q18477654.
   ?NeuroMat wdt:P577 ?dataTemp.
-  BIND(STR(YEAR(?dataTemp)) AS ?Year)  
+  BIND(STR(YEAR(?dataTemp)) AS ?Ano)  
   ?NeuroMat wdt:P921 ?key. 
   SERVICE wikibase:label { bd:serviceParam wikibase:language "pt-br".}
 } 
-GROUP BY ?key ?keyLabel ?Year 
+GROUP BY ?key ?keyLabel ?Ano 
 
 ----Em inglês ---------------
 https://w.wiki/6GbB
