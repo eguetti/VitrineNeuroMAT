@@ -1,0 +1,37 @@
+
+consulta afiliados conferencia WECUDI
+---------------------
+
+#defaultView:Map
+SELECT ?coordsLabel ?coords ?paisLabel WHERE {    
+     Values ?Anio { 2013 2014 2015 2016 2017 2018 2019 2020 2021 2022 2023 2024}
+    ?pesquisadores p:P1416 [ps:P1416 wd:Q18477654;
+                     pq:P39 ?position;
+                     pq:P580 ?starttime;  
+                     pq:P582 ?endtime;
+                  ].
+    
+    BIND(YEAR(?starttime) AS ?AnoIni)
+    BIND(YEAR(?endtime) AS ?AnoFim)    
+    
+    BIND(STR(?Anio) AS ?Ano)    
+  
+    FILTER( ?Anio >= ?AnoIni && ?Anio <= ?AnoFim )   
+  
+  optional {
+    ?pesquisadores wdt:P108 ?employer.   
+    ?employer wdt:P625 ?coords.
+  }
+   optional {
+    ?pesquisadores wdt:P108 ?employer.   
+    ?employer wdt:P17 ?pais. 
+    ?pais wdt:P625 ?coords.
+  }  
+  optional {
+    ?pesquisadores wdt:P185 ?doutor. 
+    ?pesquisadores wdt:P27 ?pais. 
+    ?pais wdt:P625 ?coords.
+  }
+   
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],pt". }
+}
