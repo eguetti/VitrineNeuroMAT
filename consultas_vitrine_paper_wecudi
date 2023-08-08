@@ -40,7 +40,7 @@ SELECT ?coordsLabel ?coords ?paisLabel WHERE {
 
 Consulta grafo co-autores por gênero
 ------------------
-
+#defaultView:Graph
 SELECT DISTINCT ?Autor1 ?Autor1Label ?rgb ?Autor2 ?Autor2Label
 WITH {
   SELECT ?Obra WHERE {    
