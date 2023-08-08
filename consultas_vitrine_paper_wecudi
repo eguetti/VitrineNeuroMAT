@@ -35,3 +35,57 @@ SELECT ?coordsLabel ?coords ?paisLabel WHERE {
    
   SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],pt". }
 }
+
+
+
+Consulta grafo co-autores por gênero
+------------------
+
+SELECT DISTINCT ?Autor1 ?Autor1Label ?rgb ?Autor2 ?Autor2Label
+WITH {
+  SELECT ?Obra WHERE {    
+  ?Obra wdt:P361 wd:Q18477654;  
+      wdt:P1433 ?revista;
+          wdt:P577 ?data_.   
+   ?Obra wdt:P50 ?Autor.
+   ?Autor wdt:P31 wd:Q5.
+   ?Autor wdt:P21 ?Gênero .     
+   
+    BIND(STR(YEAR(?data_)) AS ?Year)
+    OPTIONAL {      
+      ?revista wdt:P9683 ?qualis.
+      OPTIONAL{
+           ?qualis rdfs:label ?label_.
+           FILTER(LANG(?label_)="pt-br")
+      }            
+      BIND(IF(wikibase:isSomeValue(?qualis), "Sem Cla", ?label_) AS ?label)    
+      }     
+     FILTER( str(?label)!="B1" && str(?label)!="B2" && str(?label)!="B3" 
+         && str(?label)!="B4" && str(?label)!="C" && str(?label)!="NP" 
+           && str(?label)!="Sem Cla")  
+  }
+} AS %artigos
+WITH {
+  SELECT distinct ?Autor1 ?Obra WHERE {
+    INCLUDE %artigos.    
+    ?Obra wdt:P50 ?Autor1.
+    ?Autor1 wdt:P31 wd:Q5.
+  }
+} AS %autor1
+WITH {
+  SELECT distinct ?Autor1 ?Autor2 ?Obra WHERE {
+    INCLUDE %artigos.
+    INCLUDE %autor1.    
+    ?Obra wdt:P50 ?Autor2.     
+    ?Autor2 wdt:P31 wd:Q5.
+    FILTER(?Autor1 != ?Autor2)
+  }
+  GROUP BY ?Autor1 ?Autor2 ?Obra
+} AS %autor2
+WHERE {
+  INCLUDE %autor2.
+  ?Autor1 wdt:P21 ?Gênero .    
+  
+  BIND( IF(?Gênero = wd:Q6581097, "3182BD", "FF007F") AS ?rgb)   
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
+}
